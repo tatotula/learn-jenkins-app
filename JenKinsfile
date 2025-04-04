@@ -44,7 +44,7 @@ pipeline {
         stage('E2E') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-noble'
+                    image 'mcr.microsoft.com/playwright:v1.51.1-noble'
                     reuseNode true
                     // we are having issues with permissions but running the container as root is not a good idea
                     // with Jenkins you will have issues later with the workspace so DON'T DO IT
