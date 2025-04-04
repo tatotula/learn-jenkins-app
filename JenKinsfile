@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('w/o docker') {
+            steps {
+                sh '''
+                    echo "without Docker" 
+                    ls -la
+                    touch container-no.txt
+                '''
+            }
+        }
+        stage('w docker') {
+            //if we use docker you have to add as an agent an image in this case node
+            //alpine is a good distribution for CICD
+            agent {
+                docker {
+                     image 'node:18-alpine'
+                     reuseNode true
+                }
+            }
+            steps {
+                // these commands are executed in the container
+                sh '''
+                    echo "with Docker" 
+                    ls -la
+                    touch container-yes.txt
+                '''
+            }
+        }
+    }
+}
