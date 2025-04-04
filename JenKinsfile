@@ -23,5 +23,22 @@ pipeline {
                
             }
         }
+        stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                // Not mandatory but good to do it node --version and npm --version
+                // npm ci - to install dependencies that are not checked out in git(node_modules folder)
+               sh '''
+                    test build/index.html
+                    npm test
+               '''
+               
+            }
+        }
     }
 }
