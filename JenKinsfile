@@ -63,8 +63,9 @@ pipeline {
                     node_modules/.bin/serve -s build &
                     # we give the serve some time to start
                     sleep 10
-                    
-                    npx playwright test
+                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright yarn add playwright-chromium@1.11.1
+                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright yarn test
+                    npx playwright test --reporter=html
                '''
                
             }
