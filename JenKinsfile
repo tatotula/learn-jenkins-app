@@ -46,13 +46,21 @@ pipeline {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.51.1-noble'
                     reuseNode true
+                    // we are having issues with permissions but running the container as root is not a good idea
+                    // with Jenkins you will have issues later with the workspace so DON'T DO IT
+                    //args '-u root:root'
                 }
             }
             steps {
                 /* the firt two lines are the execution on the program so it is working
                  the thrid line is to execute the playwright test */
                sh '''
-                    npm install -g serve
+                    # we are installing serve as a global dependency that's why we don't have permissions
+                    # but we can install it locally to the project
+                    # npm install -g serve
+                    npm install serve
+                    # Installs the serve locally
+                    node_modules/.bin/serve -s build
                     serve -s build
                     npx playwright test
                '''
