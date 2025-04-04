@@ -59,9 +59,10 @@ pipeline {
                     # but we can install it locally to the project
                     # npm install -g serve
                     npm install serve
-                    # Installs the serve locally
-                    node_modules/.bin/serve -s build
-                    serve -s build
+                    # Installs the serve locally and in the background so it can finish
+                    node_modules/.bin/serve -s build &
+                    # we give the serve some time to start
+                    sleep 10
                     npx playwright test
                '''
                
