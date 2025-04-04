@@ -63,8 +63,8 @@ pipeline {
                     node_modules/.bin/serve -s build &
                     # we give the serve some time to start
                     sleep 10
-                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright npx add playwright-chromium@1.11.1
-                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright npx test
+                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright npm add playwright-chromium@1.11.1
+                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright npm test
                     env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1
                     npx playwright test --reporter=html
                '''
