@@ -44,7 +44,7 @@ pipeline {
         stage('E2E') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.51.1-noble'
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
                     // we are having issues with permissions but running the container as root is not a good idea
                     // with Jenkins you will have issues later with the workspace so DON'T DO IT
@@ -63,9 +63,6 @@ pipeline {
                     node_modules/.bin/serve -s build &
                     # we give the serve some time to start
                     sleep 10
-                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright npm add playwright-chromium@1.11.1
-                    PLAYWRIGHT_BROWSERS_PATH=/usr/lib/playwright npm test
-                    env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1
                     npx playwright test --reporter=html
                '''
                
