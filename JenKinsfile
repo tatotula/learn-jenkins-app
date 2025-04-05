@@ -142,8 +142,10 @@ pipeline {
             steps {
                 // netlify
                sh '''
-                    # Install netlify-cli as per netlyfy docs - we are using the -g global flag
-                    npm install netlify-cli -g
+                    # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same error # as  before because we use the -g. we remove the -g and it will be available at node-modules/.bin
+                    # npm install netlify-cli -g 
+                    
+                    npm install netlify-cli
                     netlify --version
 
                '''
