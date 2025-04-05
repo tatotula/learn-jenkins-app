@@ -43,13 +43,14 @@ pipeline {
                     '''
                     
                     }
-                }
-                // Use the post for each individual stage
-                post{
-                    always{
-                        junit 'jest-results/junit.xml'  
+                    // Use the post for each individual stage
+                    post{
+                        always{
+                            junit 'jest-results/junit.xml'  
+                        }
                     }
-    }
+                }
+                
                 stage('E2E') {
                     agent {
                         docker {
@@ -76,13 +77,14 @@ pipeline {
                     '''
                     
                     }
-                }
-                // Use the post individually for each stage
-                post{
-                    always{
-                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                    // Use the post individually for each stage
+                    post{
+                        always{
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                        }
                     }
-    }
+                }
+                
             }
         }
         // stage('Test') {
