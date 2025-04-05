@@ -24,50 +24,99 @@ pipeline {
                
             }
         }*/
-        stage('Test') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
+        // create running stages in parallel
+        stage('Tests'){
+            parallel {
+                stage('Unit test') {
+                    agent {
+                        docker {
+                            image 'node:18-alpine'
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        // Not mandatory but good to do it node --version and npm --version
+                        // npm ci - to install dependencies that are not checked out in git(node_modules folder)
+                    sh '''
+                            test build/index.html
+                            npm test
+                    '''
+                    
+                    }
+                }
+                stage('E2E') {
+                    agent {
+                        docker {
+                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            reuseNode true
+                            // we are having issues with permissions but running the container as root is not a good idea
+                            // with Jenkins you will have issues later with the workspace so DON'T DO IT
+                            //args '-u root:root'
+                        }
+                    }
+                    steps {
+                        /* the firt two lines are the execution on the program so it is working
+                        the thrid line is to execute the playwright test */
+                    sh '''
+                            # we are installing serve as a global dependency that's why we don't have permissions
+                            # but we can install it locally to the project
+                            # npm install -g serve
+                            npm install serve
+                            # Installs the serve locally and in the background so it can finish
+                            node_modules/.bin/serve -s build &
+                            # we give the serve some time to start
+                            sleep 10
+                            npx playwright test --reporter=html
+                    '''
+                    
+                    }
                 }
             }
-            steps {
-                // Not mandatory but good to do it node --version and npm --version
-                // npm ci - to install dependencies that are not checked out in git(node_modules folder)
-               sh '''
-                    test build/index.html
-                    npm test
-               '''
-               
-            }
         }
-        stage('E2E') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
-                    // we are having issues with permissions but running the container as root is not a good idea
-                    // with Jenkins you will have issues later with the workspace so DON'T DO IT
-                    //args '-u root:root'
-                }
-            }
-            steps {
-                /* the firt two lines are the execution on the program so it is working
-                 the thrid line is to execute the playwright test */
-               sh '''
-                    # we are installing serve as a global dependency that's why we don't have permissions
-                    # but we can install it locally to the project
-                    # npm install -g serve
-                    npm install serve
-                    # Installs the serve locally and in the background so it can finish
-                    node_modules/.bin/serve -s build &
-                    # we give the serve some time to start
-                    sleep 10
-                    npx playwright test --reporter=html
-               '''
+        // stage('Test') {
+        //     agent {
+        //         docker {
+        //             image 'node:18-alpine'
+        //             reuseNode true
+        //         }
+        //     }
+        //     steps {
+        //         // Not mandatory but good to do it node --version and npm --version
+        //         // npm ci - to install dependencies that are not checked out in git(node_modules folder)
+        //        sh '''
+        //             test build/index.html
+        //             npm test
+        //        '''
                
-            }
-        }
+        //     }
+        // }
+        // stage('E2E') {
+        //     agent {
+        //         docker {
+        //             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+        //             reuseNode true
+        //             // we are having issues with permissions but running the container as root is not a good idea
+        //             // with Jenkins you will have issues later with the workspace so DON'T DO IT
+        //             //args '-u root:root'
+        //         }
+        //     }
+        //     steps {
+        //         /* the firt two lines are the execution on the program so it is working
+        //          the thrid line is to execute the playwright test */
+        //        sh '''
+        //             # we are installing serve as a global dependency that's why we don't have permissions
+        //             # but we can install it locally to the project
+        //             # npm install -g serve
+        //             npm install serve
+        //             # Installs the serve locally and in the background so it can finish
+        //             node_modules/.bin/serve -s build &
+        //             # we give the serve some time to start
+        //             sleep 10
+        //             npx playwright test --reporter=html
+        //        '''
+               
+        //     }
+        // }
     }
     post{
         always{
