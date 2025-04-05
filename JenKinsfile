@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        /*
+        
         stage('Build') {
             agent {
                 docker {
@@ -23,7 +23,7 @@ pipeline {
                '''
                
             }
-        }*/
+        }
         // create running stages in parallel
         stage('Tests'){
             parallel {
@@ -131,6 +131,25 @@ pipeline {
                
         //     }
         // }
+        // Deply with Netlifly
+        stage('Deploy') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                // netlify
+               sh '''
+                    # Install netlify-cli as per netlyfy docs - we are using the -g global flag
+                    npm install netlify-cli -g
+                    netlify --version
+
+               '''
+               
+            }
+        }
     }
     // post{
     //     always{
