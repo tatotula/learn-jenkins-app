@@ -18,6 +18,7 @@ pipeline {
                 // Not mandatory but good to do it node --version and npm --version
                 // npm ci - to install dependencies that are not checked out in git(node_modules folder)
                sh '''
+                    echo "Small change"
                     ls -la
                     node --version
                     npm --version
