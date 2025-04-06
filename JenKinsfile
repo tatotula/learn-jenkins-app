@@ -157,6 +157,9 @@ pipeline {
                     echo "Deploy to production. Dite id: $NETLIFY_SITE_ID"
                     # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to see # the possible commands for the cli in netlify
                     node_modules/.bin/netlify status
+                    # command to actually deploy the app in netlify and passing the directory we want the app to be 
+                    # deployed
+                    node_modules/.bin/netlify deploy --dir=build --prod
 
                '''
                
