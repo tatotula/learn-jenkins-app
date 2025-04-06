@@ -149,15 +149,9 @@ pipeline {
                     # npm install netlify-cli -g 
                     
                     #npm install netlify-cli
-                    # npm install rimraf@latest
-                    # npm install npmlog@latest
-                    # npm instal gauge@latest
-                    # npm instal are-we-there-yet@latest
-                    #npm instal glob@latest
-
-
-
+                   
                     npm install netlify-cli 
+                    # You have to use the dir to get to work
                     node_modules/.bin/netlify --version
                     echo "Deploy to production. Dite id: $NETLIFY_SITE_ID"
 
