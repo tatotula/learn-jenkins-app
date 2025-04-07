@@ -154,6 +154,7 @@ pipeline {
                     #npm install netlify-cli
                    
                     npm install netlify-cli 
+                    npm install node-jq
                     # You have to use the dir to get to work
                     node_modules/.bin/netlify --version
                     echo "Deploy to staging. Site id: $NETLIFY_SITE_ID"
@@ -161,8 +162,8 @@ pipeline {
                     node_modules/.bin/netlify status
                     # command to actually deploy the app in netlify and passing the directory we want the app to be 
                     # deploying without the --prod flag will create a temporary environment that can be our staging
-                    node_modules/.bin/netlify deploy --dir=build
-
+                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
+                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                '''
                
             }
