@@ -149,6 +149,10 @@ pipeline {
                     //args '-u root:root'
                 }
             }
+            environment {
+                // We create the variable with whatever so later on can get the real value from the node-jq deploy-url
+                CI_ENVIRONMENT_URL = "STAGE_URL_TO_BE_SET"
+            }
             steps {
                 /* the first two lines are the execution on the program so it is working
                 the thrid line is to execute the playwright test */
