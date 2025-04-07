@@ -3,6 +3,7 @@ pipeline {
     environment {
         NETLIFY_SITE_ID = '04b1fb46-62cd-4b1c-bdd2-3c8fe0e8ee95'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token')
+
     }
 
     stages {
@@ -85,7 +86,7 @@ pipeline {
                     // Use the post individually for each stage
                     post{
                         always{
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright local Report', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -166,6 +167,37 @@ pipeline {
                
             }
         }
+        stage('Prod E2E') {
+            // to test in production if the app works
+            environment {
+                CI_ENVIRONMENT_URL = "https://bright-piroshki-ce863e.netlify.app/"
+            }
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                    // we are having issues with permissions but running the container as root is not a good idea
+                    // with Jenkins you will have issues later with the workspace so DON'T DO IT
+                    //args '-u root:root'
+                }
+            }
+            steps {
+                /* the firt two lines are the execution on the program so it is working
+                the thrid line is to execute the playwright test */
+            sh '''
+                    # we don't need to start anythin local as it is already in netlify
+                    # The configuration for playright is in playwright.config.js
+                    npx playwright test --reporter=html
+            '''
+            
+            }
+            // Use the post individually for each stage
+            post{
+                always{
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
+                }
     }
     // post{
     //     always{
