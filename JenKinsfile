@@ -139,15 +139,20 @@ pipeline {
         // }
         // Deploy with Netlifly creating an staging environment
         stage('Deploy staging') {
+          
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
+                    // we are having issues with permissions but running the container as root is not a good idea
+                    // with Jenkins you will have issues later with the workspace so DON'T DO IT
+                    //args '-u root:root'
                 }
             }
             steps {
-                // netlify
-               sh '''
+                /* the first two lines are the execution on the program so it is working
+                the thrid line is to execute the playwright test */
+            sh ''' 
                     # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same error # as  before because we use the -g. we remove the -g and it will be available at node-modules/.bin
                     # npm install netlify-cli -g 
                     
@@ -163,38 +168,12 @@ pipeline {
                     # command to actually deploy the app in netlify and passing the directory we want the app to be 
                     # deploying without the --prod flag will create a temporary environment that can be our staging
                     node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
+                    # get the deploy_url fiel from the json file
+                    CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json)
                     # node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
-               '''
-
-               script{
-                // Passing value of the deploy_url 
-                env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout:true)
-                }
-               
-            }
-            
-        }
-        stage('Staging E2E') {
-            // to test in production if the app works
-            environment {
-                // Read the staging url for the staging stage
-                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
-            }
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
-                    // we are having issues with permissions but running the container as root is not a good idea
-                    // with Jenkins you will have issues later with the workspace so DON'T DO IT
-                    //args '-u root:root'
-                }
-            }
-            steps {
-                /* the firt two lines are the execution on the program so it is working
-                the thrid line is to execute the playwright test */
-            sh '''
                     # we don't need to start anythin local as it is already in netlify
                     # The configuration for playright is in playwright.config.js
+                    
                     npx playwright test --reporter=html
             '''
             
