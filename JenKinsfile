@@ -163,9 +163,47 @@ pipeline {
                     # command to actually deploy the app in netlify and passing the directory we want the app to be 
                     # deploying without the --prod flag will create a temporary environment that can be our staging
                     node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
-                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
+                    # node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                '''
+
+               script{
+                // Passing value of the deploy_url 
+                env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout:true)
+                }
                
+            }
+            
+        }
+        stage('Staging E2E') {
+            // to test in production if the app works
+            environment {
+                // Read the staging url for the staging stage
+                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+            }
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                    // we are having issues with permissions but running the container as root is not a good idea
+                    // with Jenkins you will have issues later with the workspace so DON'T DO IT
+                    //args '-u root:root'
+                }
+            }
+            steps {
+                /* the firt two lines are the execution on the program so it is working
+                the thrid line is to execute the playwright test */
+            sh '''
+                    # we don't need to start anythin local as it is already in netlify
+                    # The configuration for playright is in playwright.config.js
+                    npx playwright test --reporter=html
+            '''
+            
+            }
+            // Use the post individually for each stage
+            post{
+                always{
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Staging E2E', reportTitles: '', useWrapperFileDirectly: true])
+                }
             }
         }
         stage('Approval') {
@@ -234,7 +272,7 @@ pipeline {
             // Use the post individually for each stage
             post{
                 always{
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Prod E2E', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
         }
