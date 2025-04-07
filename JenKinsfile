@@ -137,8 +137,37 @@ pipeline {
                
         //     }
         // }
-        // Deply with Netlifly
-        stage('Deploy') {
+        // Deploy with Netlifly creating an staging environment
+        stage('Deploy staging') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                // netlify
+               sh '''
+                    # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same error # as  before because we use the -g. we remove the -g and it will be available at node-modules/.bin
+                    # npm install netlify-cli -g 
+                    
+                    #npm install netlify-cli
+                   
+                    npm install netlify-cli 
+                    # You have to use the dir to get to work
+                    node_modules/.bin/netlify --version
+                    echo "Deploy to staging. Site id: $NETLIFY_SITE_ID"
+                    # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to see # the possible commands for the cli in netlify
+                    node_modules/.bin/netlify status
+                    # command to actually deploy the app in netlify and passing the directory we want the app to be 
+                    # deploying without the --prod flag will create a temporary environment that can be our staging
+                    node_modules/.bin/netlify deploy --dir=build
+
+               '''
+               
+            }
+        }
+        stage('Deploy prod') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -160,7 +189,7 @@ pipeline {
                     # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to see # the possible commands for the cli in netlify
                     node_modules/.bin/netlify status
                     # command to actually deploy the app in netlify and passing the directory we want the app to be 
-                    # deployed
+                    # deploying in prod (--prod)
                     node_modules/.bin/netlify deploy --dir=build --prod
 
                '''
