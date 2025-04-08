@@ -194,7 +194,7 @@ pipeline {
                         # get the deploy_url field from the json file
                         #CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json)
                         # because of the custom image node-jq is installed globally
-                    CI_ENVIRONMENT_URL=$(jq -r '.deploy_url' deploy-output.json)
+                    CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' deploy-output.json)
                     echo "Lalalala"
                         # node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                         # we don't need to start anythin local as it is already in netlify
