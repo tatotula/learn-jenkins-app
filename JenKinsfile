@@ -8,6 +8,12 @@ pipeline {
     }
 
     stages {
+        stage('Docker'){
+            steps {
+                // building the image
+                sh 'docker build -t my-playwright .'
+            }
+        }
         
         stage('Build') {
             agent {
@@ -143,7 +149,9 @@ pipeline {
           
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    //Using the custom image
+                    image 'my-playwright'
+                    //image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
                     // we are having issues with permissions but running the container as root is not a good idea
                     // with Jenkins you will have issues later with the workspace so DON'T DO IT
@@ -158,26 +166,29 @@ pipeline {
                 /* the first two lines are the execution on the program so it is working
                 the thrid line is to execute the playwright test */
             sh ''' 
-                    # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same error # as  before because we use the -g. we remove the -g and it will be available at node-modules/.bin
-                    # npm install netlify-cli -g 
+                        # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same #error as  before because we use the -g. we remove the -g and it will be available at # node-modules/.bin
+                        # npm install netlify-cli -g 
+                        
+                        #npm install netlify-cli
                     
-                    #npm install netlify-cli
-                   
-                    npm install netlify-cli 
-                    npm install node-jq
-                    # You have to use the dir to get to work
-                    node_modules/.bin/netlify --version
+                        #npm install netlify-cli 
+                        #npm install node-jq
+                        # You have to use the dir to get to work
+                        # node_modules/.bin/netlify --version
+                        # because of the custom image netlify is installed globally
+                    netlify --version
                     echo "Deploy to staging. Site id: $NETLIFY_SITE_ID"
-                    # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to see # the possible commands for the cli in netlify
-                    node_modules/.bin/netlify status
-                    # command to actually deploy the app in netlify and passing the directory we want the app to be 
-                    # deploying without the --prod flag will create a temporary environment that can be our staging
-                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
-                    # get the deploy_url fiel from the json file
+                        # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to # see the possible commands for the cli in netlify
+                        # because of the custom image netlify is installed globally
+                    netlify status
+                        # command to actually deploy the app in netlify and passing the directory we want the app to #be deploying without the --prod flag will create a temporary environment that can be our #staging
+                        # because of the custom image netlify is installed globally
+                    netlify deploy --dir=build --json > deploy-output.json
+                        # get the deploy_url field from the json file
                     CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json)
-                    # node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
-                    # we don't need to start anythin local as it is already in netlify
-                    # The configuration for playright is in playwright.config.js
+                        # node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
+                        # we don't need to start anythin local as it is already in netlify
+                        # The configuration for playright is in playwright.config.js
                     
                     npx playwright test --reporter=html
             '''
@@ -221,26 +232,32 @@ pipeline {
                 /* the firt two lines are the execution on the program so it is working
                 the thrid line is to execute the playwright test */
             sh '''
-                    # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same error # as  before because we use the -g. we remove the -g # and it will be available at node-modules/.bin
-                    # npm install netlify-cli -g 
+                        # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same error  
+                        # as  before because we use the -g. we remove the -g # and it will be available at #node-modules/.    
+                        #bin npm install netlify-cli -g 
                     
-                    #npm install netlify-cli
+                        #npm install netlify-cli
                    
                     npm install netlify-cli 
-                    # You have to use the dir to get to work
+                        # You have to use the dir to get to work
                     node_modules/.bin/netlify --version
                     echo "Deploy to production. Dite id: $NETLIFY_SITE_ID"
-                    # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to see # the possible commands for the cli in netlify
-                    node_modules/.bin/netlify status
-                    # command to actually deploy the app in netlify and passing the directory we want the app to be 
-                    # deploying in prod (--prod)
-                    node_modules/.bin/netlify deploy --dir=build --prod
-                    # giving some time in case the deployment takes a little longer so the tests won't fail
+                        # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to # see 
+                        # the possible commands for the cli in netlify
+                        # node_modules/.bin/netlify status
+                        # because it is global now with the custom image remove node_modules
+                    netlify status
+
+                        # command to actually deploy the app in netlify and passing the directory we want the app to 
+                        # be deploying in prod (--prod)
+                        # Because of the glabal installation inside the docker image
+                    netlify deploy --dir=build --prod
+                        # giving some time in case the deployment takes a little longer so the tests won't fail
                     sleep 20
 
-                    # test part:
-                    # we don't need to start anythin local as it is already in netlify
-                    # The configuration for playright is in playwright.config.js
+                        # test part:
+                        # we don't need to start anythin local as it is already in netlify
+                        # The configuration for playright is in playwright.config.js
                     npx playwright test --reporter=html
             '''
             
