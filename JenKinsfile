@@ -8,12 +8,13 @@ pipeline {
     }
 
     stages {
-        stage('Docker'){
-            steps {
-                // building the image - my-playwright is the name of the image we will use later
-                sh 'docker build -t my-playwright .'
-            }
-        }
+        //Added to another Jenkinsfile
+        // stage('Docker'){
+        //     steps {
+        //         // building the image - my-playwright is the name of the image we will use later
+        //         sh 'docker build -t my-playwright .'
+        //     }
+        // }
         
         stage('Build') {
             agent {
