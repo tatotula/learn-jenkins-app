@@ -15,23 +15,6 @@ pipeline {
         //         sh 'docker build -t my-playwright .'
         //     }
         // }
-
-        // Create a stage for AWS
-        stage('AWS'){
-            agent{
-                docker{ 
-                    // This image is going to be latest
-                    image 'amazon/aws-cli'
-                    // The image is built so it needs an entrypoint so we are giving it an empty one
-                    args "--entrypoint=''"
-                }
-            }
-            steps{
-                sh '''
-                    aws --version
-                '''
-            }
-        }
         
         stage('Build') {
             agent {
