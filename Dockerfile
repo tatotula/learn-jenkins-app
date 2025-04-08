@@ -5,5 +5,5 @@ FROM mcr.microsoft.com/playwright:v1.39.0-jammy
 # Node jq is going to be install with apt
 RUN npm install -g netlify-cli serve
 # RUN npm install -g node-jq
-RUN apt update
-RUN apt install jq -y
+# if you put the two commands together is all in one layer
+RUN apt update && apt install jq -y
