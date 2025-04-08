@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Docker'){
             steps {
-                // building the image
+                // building the image - my-playwright is the name of the image we will use later
                 sh 'docker build -t my-playwright .'
             }
         }
@@ -165,8 +165,8 @@ pipeline {
             steps {
                 /* the first two lines are the execution on the program so it is working
                 the thrid line is to execute the playwright test */
-            sh ''' 
-                        # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same #error as  before because we use the -g. we remove the -g and it will be available at # node-modules/.bin
+                sh ''' 
+                        # Install netlify-cli as per netlyfy docs - we are using the -g global flag we have the same #error as  before because we use the -g. we remove the -g and it will be available at # #node-modules/.bin
                         # npm install netlify-cli -g 
                         
                         #npm install netlify-cli
@@ -177,6 +177,7 @@ pipeline {
                         # node_modules/.bin/netlify --version
                         # because of the custom image netlify is installed globally
                     netlify --version
+                    
                     echo "Deploy to staging. Site id: $NETLIFY_SITE_ID"
                         # to check if the netlify token has worked correctly - https://cli.netlify.com/ if you want to # see the possible commands for the cli in netlify
                         # because of the custom image netlify is installed globally
@@ -219,11 +220,14 @@ pipeline {
         stage('Deploy Prod') {
             // to test in production if the app works
             environment {
+                
                 CI_ENVIRONMENT_URL = "https://bright-piroshki-ce863e.netlify.app/"
+                
             }
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    // use the custom image created in the Docker stage
+                    image 'my-playwright'
                     reuseNode true
                     // we are having issues with permissions but running the container as root is not a good idea
                     // with Jenkins you will have issues later with the workspace so DON'T DO IT
