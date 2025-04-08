@@ -67,7 +67,9 @@ pipeline {
                 stage('E2E') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            // Using the custom image
+                            image 'my-playwright'
+                            //image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                             reuseNode true
                             // we are having issues with permissions but running the container as root is not a good idea
                             // with Jenkins you will have issues later with the workspace so DON'T DO IT
@@ -78,13 +80,16 @@ pipeline {
                         /* the firt two lines are the execution on the program so it is working
                         the thrid line is to execute the playwright test */
                     sh '''
-                            # we are installing serve as a global dependency that's why we don't have permissions
-                            # but we can install it locally to the project
-                            # npm install -g serve
+                                # we are installing serve as a global dependency that's why we don't have permissions
+                                # but we can install it locally to the project
+                                # npm install -g serve
                             npm install serve
-                            # Installs the serve locally and in the background so it can finish
-                            node_modules/.bin/serve -s build &
-                            # we give the serve some time to start
+                                # Installs the serve locally and in the background so it can finish
+
+                                #node_modules/.bin/serve -s build &
+                                # using the custom image
+                            serve -s build &
+                                # we give the serve some time to start
                             sleep 10
                             npx playwright test --reporter=html
                     '''
