@@ -16,30 +16,7 @@ pipeline {
         //     }
         // }
 
-        // Create a stage for AWS
-        stage('AWS'){
-            agent{
-                docker{ 
-                    // This image is going to be latest
-                    image 'amazon/aws-cli'
-                    // The image is built so it needs an entrypoint so we are giving it an empty one
-                    args "--entrypoint=''"
-                }
-            }
-            environment {
-                AWS_S3_BUCKET = 'cf-templates-13p5bvxvb204w-us-east-1'
-            }
-            steps{
-                withCredentials([usernamePassword(credentialsId: 'my_aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    sh '''
-                        aws --version
-                        echo "Hello s3"  > index.html
-                        aws s3 cp index.html s3://$AWS_S3_BUCKET/index.html
-                    '''
-                }
-                
-            }
-        }
+        
         
         stage('Build') {
             agent {
@@ -61,6 +38,32 @@ pipeline {
                     ls  -la
                '''
                
+            }
+        }
+        // Create a stage for AWS - It is going to copy the build directory into the bucket
+        stage('AWS'){
+            agent{
+                docker{ 
+                    // This image is going to be latest
+                    image 'amazon/aws-cli'
+                    // The image is built so it needs an entrypoint so we are giving it an empty one
+                    args "--entrypoint=''"
+                }
+            }
+            environment {
+                AWS_S3_BUCKET = 'cf-templates-13p5bvxvb204w-us-east-1'
+            }
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'my_aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                    sh '''
+                        aws --version
+                        echo "Hello s3"  > index.html
+                            #aws s3 cp index.html s3://$AWS_S3_BUCKET/index.html
+                            # synchronizing the build directory into our bucket
+                        aws s3 sync build s3://$AWS_S3_BUCKET
+                    '''
+                }
+                
             }
         }
         // create running stages in parallel
