@@ -46,6 +46,8 @@ pipeline {
                 docker{ 
                     // This image is going to be latest
                     image 'amazon/aws-cli'
+                    // We add this so they workspace is share and we can access to the build dir later
+                    reuseNode  true
                     // The image is built so it needs an entrypoint so we are giving it an empty one
                     args "--entrypoint=''"
                 }
